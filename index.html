@@ -1,0 +1,346 @@
+<!-- Code from d3-graph-gallery.com -->
+<!DOCTYPE html>
+<html lang = "en">
+<head>
+  <meta charset="UTF-8">
+  <title>COVID-19 Data Visualisation</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <script type='text/javascript' src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3-array@3"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3-geo@3"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3-fetch@3"></script>
+  <!-- <script src="https://unpkg.com/topojson@3"></script> -->
+  <script src="https://unpkg.com/topojson-client@3"></script>   
+  
+  <!-- <script src="https://web.archive.org/web/20230311065005if_/https://unpkg.com/topojson-client@3.1.0/dist/topojson-client.min.js"></script>  -->
+  <!-- switch topojson if failing -->
+  <script src="https://unpkg.com/d3-simple-slider"></script>
+
+</head>
+<body>
+  <div id="container">
+    <div id="header">
+      <h1>COVID-19 Data Visualisation</h1>
+    </div>  
+    <div>
+      <p> Adjust slider to select the number of days since 2020-01-03 up to the last recorded day of 2023-03-15.</p>
+    </div>
+      <svg id="svg" width="1000" height="600"></svg>
+      <div id="dataviz_basicZoom"></div>
+      <div id="slider"></div>
+    <div>
+      <p>Here displays a choropleth of new cases smoothed per million over time, the darker the red, the higher number of new cases.</p>
+      
+    </div>  
+    <div>
+      <svg id="scatter_plot" width="1000" height="1000"></svg>></svg>   
+    </div>
+    <div>
+      <p>Here displays a scatter plot showing gdp per capita (x axis) vs total cases per million (y axis).</p>
+    </div> 
+    <div>
+      <svg id="scatter_plot2" width="1000" height="1000"></svg>></svg>   
+    </div>
+    <div>
+      <p>Here displays a scatter plot showing total vaccinations per hundred (x axis) vs total cases per million (y axis).</p>
+    </div> 
+    <select id="DropdownButton"></select>
+    <div>
+      <svg id="line_graph" width="1000" height="1000"></svg>></svg>
+    </div> 
+    <div>
+      <p>Here displays a line graph showing total cases per million over time for any country selected in the top left.</p>
+    </div>  
+  </div>
+</body>
+
+
+<script>
+// The choropleth map showing total cases over time
+var svg = d3.select('svg'),
+  width = +svg.attr('width'),
+  height = +svg.attr('height');
+
+//defining the margins
+const margin = {top: 10, right: 30, bottom: 30, left: 60},
+  width2 = 1000 - margin.left - margin.right,
+  height2 = 1000 - margin.top - margin.bottom;
+
+//scatter plot showing gdp_per_capita vs total_cases
+var svg1 = d3.select('#scatter_plot')
+  .append("svg")
+  .attr("width", width2 + margin.left + margin.right)
+  .attr("height", height2 + margin.top + margin.bottom)
+  .append("g")
+  .attr("transform", `translate(${margin.left}, ${margin.top})`)
+  .style('justify-content', 'center');
+
+
+//scatter plot showing total_vaccinations vs total_cases
+var svg3 = d3.select('#scatter_plot2')
+  .append("svg")
+  .attr("width", width2 + margin.left + margin.right)
+  .attr("height", height2 + margin.top + margin.bottom)
+  .append("g")
+  .attr("transform", `translate(${margin.left}, ${margin.top})`)
+  .style('justify-content', 'center');  
+
+//line graph showing total cases over time
+var svg2 = d3.select('#line_graph')
+  .append("svg")
+  .attr("width", width2 + margin.left + margin.right)
+  .attr("height", height2 + margin.top + margin.bottom)
+  .append("g")
+  .attr("transform", `translate(${margin.left},${margin.top})`)
+  // .style('justify-content', 'center');
+
+
+d3.csv("https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/owid-covid-data.csv").then((data) => {
+
+  var filtered;
+  
+  var dates = new Map(); //instantiate dates hashmap 
+  for (var i = 0; i < data.length; i++) { //iterate through the data
+    const e = data[i];
+    let previousElement = dates.get(e.date);
+    if (previousElement == null) {
+      previousElement = [];
+    }
+    previousElement.push(e);
+    dates.set(e.date, previousElement);
+  }
+  let dateKeys = Array.from(dates.keys());
+  //collected a list of all dates in the csv file
+  console.log(dateKeys.length);
+
+
+  
+  //SCATTER PLOT data
+  
+  // Adding X axis
+  const scatterX1 = d3.scaleLinear()
+  .domain([0, 400])
+  .range([ 0, width2 ]);
+  svg3.append("g")
+  .attr("transform", `translate(0, ${height2})`)
+  .call(d3.axisBottom(scatterX1));
+  
+  // Adding Y axis
+  const scatterY1 = d3.scaleLinear()
+  .domain([0, 1000000])
+  .range([ height2, 0]);
+  svg3.append("g")
+  .call(d3.axisLeft(scatterY1));
+
+  console.log(typeof(dates.get(dateKeys[1167])));
+  // Adding dots
+  svg3.append('g')
+  .selectAll("dot")
+  .data( dates.get(dateKeys[1167]))
+  .join("circle")
+  .attr("cx", function (d) {console.log(d.total_vaccinations_per_hundred); return scatterX1(d.total_vaccinations_per_hundred); } ) 
+  .attr("cy", function (d) { return scatterY1(d.total_cases_per_million); } )
+  .attr("r", 3)
+  .style("fill", "blue")
+
+  const scatterX = d3.scaleLinear()
+  .domain([0, 100000])
+  .range([ 0, width2 ]);
+  svg1.append("g")
+  .attr("transform", `translate(0, ${height2})`)
+  .call(d3.axisBottom(scatterX));
+  
+  // Adding Y axis
+  const scatterY = d3.scaleLinear()
+  .domain([0, 1000000])
+  .range([ height2, 0]);
+  svg1.append("g")
+  .call(d3.axisLeft(scatterY));
+
+  console.log(typeof(dates.get(dateKeys[1167])));
+  // Adding dots
+  svg1.append('g')
+  .selectAll("dot")
+  .data( dates.get(dateKeys[1167]))
+  .join("circle")
+  .attr("cx", function (d) { if (d.gdp_per_capita > 1) {return scatterX(d.gdp_per_capita)} else {return 10000000}; } ) 
+  .attr("cy", function (d) { return scatterY(d.total_cases_per_million); } )
+  .attr("r", 3)
+  .style("fill", "red")
+
+  //LINE GRAPH data
+
+  var selectCountry = new Map();
+   for (var i = 0; i < data.length; i++) { //iterate through the data
+    const e = data[i];
+    let previousElement = selectCountry.get(e.location);
+    if (previousElement == null) {
+      previousElement = [];
+    }
+    previousElement.push(e);
+    selectCountry.set(e.location, previousElement);
+  }
+
+  console.log(selectCountry);
+
+  selectCountryKeys = Array.from(selectCountry.keys());
+  console.log(selectCountryKeys);
+  
+  var timeParser = d3.timeParse('%Y-%m-%d');  
+  // parse the date string into a date object
+
+  // Add X axis
+  var x2 = d3.scaleTime()
+  .domain([timeParser(dateKeys[0]), timeParser(dateKeys[1167])])
+  .range([ 0, width2 ]);
+  svg2.append("g")
+  .attr("transform", `translate(0, ${height2})`)
+  .call(d3.axisBottom(x2));
+
+  // Add Y axis
+  var y2 = d3.scaleLinear()
+  .domain([0, +1000000])
+  .range([ height2, 0 ]);
+  svg2.append("g")
+  .call(d3.axisLeft(y2));
+  
+  var filteredCountry;
+  
+  console.log(filteredCountry);
+  
+  d3.select("#DropdownButton")
+    .selectAll('myOptions')
+      .data(selectCountryKeys)
+    .enter()
+      .append('option')
+    .text(function (d) { return d; }) // text shown in the dropdown
+    .attr("value", function (d) { return filteredCountry = d; }) // value returned by the dropdown
+
+
+  function updater(filteredCountry) {
+    // updates the line graph
+    svg2.append("path")
+      .datum(filteredCountry)
+      .transition()
+      .duration(1000)
+      .attr("fill", "none")
+      .attr("stroke", "red")
+      .attr("d", d3.line()
+        .x(function(d) { return x2(timeParser(d.date)) })
+        .y(function(d) { return y2(d.total_cases_per_million) })
+      )
+  }
+
+
+  d3.select("#DropdownButton").on("change", function(event,d) {
+
+    var selectedOption = d3.select(this).property("value");
+    console.log(selectedOption);
+    filteredCountry = selectCountry.get(selectedOption);
+    // runs the updater function with this selected option
+    updater(filteredCountry);
+  })
+  
+  filteredCountry = selectCountry.get("France");
+  console.log( filteredCountry);
+
+  // Drawing the line
+  svg2.append("path")
+    .datum(filteredCountry)
+    .attr("fill", "none")
+    .attr("stroke", "red")
+    // .attr("stroke", function(d){ return color })
+    .attr("stroke-width", 1.5)
+    .attr("d", d3.line()
+      .x(function(d) {return x2(timeParser(d.date))})
+      .y(function(d) {return y2(d.total_cases_per_million)})
+      )
+
+
+  // slider
+  var slider = d3
+    .sliderHorizontal()
+    .min(0)
+    .max(1167)
+    .step(1)
+    .width(650)
+    .displayValue(true)
+    .default(1)
+
+  d3.select('#slider')
+    .append('svg')
+    .attr('width', 700)
+    .attr('height', 100)
+    .append('g')
+    .attr('transform', 'translate(30,30)')
+    .call(slider);
+
+
+  slider.on('onchange', val => {
+    // console.log(val);
+    filtered = dates.get(dateKeys[val]);
+    slider.filtered = filtered;
+    // when the slider is changed, it will update the map
+
+ 
+    const g = svg.append('g').style('justify-content', 'center');
+    const handleZoom = (e) => g.attr('transform', e.transform);
+    const zoom = d3.zoom().on('zoom', handleZoom);
+    // zooming functionality
+
+    var projection = d3.geoMercator().scale(150).center([0, 20]).translate([width / 2, height / 2]);
+    var path = d3.geoPath().projection(projection);
+    // project the mercator with this filtered data onto the svg 
+
+    d3.json('https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson').then((topology) => {
+      var countries = topology.features.filter((d) => d.properties.name);
+        // console.log(countries);
+
+        // CHOROPLETH MAP data
+        d3.selectAll("path").remove();
+        for (var j = 0; j < countries.length; j++) {
+          // console.log(countries[j].properties.name); 
+          var land = countries[j].properties.name;
+          for (var i = 0; i < filtered.length; i++) {
+            // console.log(filtered[i].location)
+            if (countries[j].properties.name === filtered[i].location || (filtered[i].location === "United States" && countries[j].properties.name === "USA" || filtered[i].location === "United Kingdom" && countries[j].properties.name === "England" || filtered[i].location === "Democratic Republic of Congo" && countries[j].properties.name === "Democratic Republic of the Congo" || filtered[i].location === "Tanzania" && countries[j].properties.name === "United Republic of Tanzania" || filtered[i].location === "Congo" && countries[j].properties.name === "Republic of the Congo" || filtered[i].location === "Serbia" && countries[j].properties.name === "Republic of Serbia" || filtered[i].location === "Guinea-Bissau" && countries[j].properties.name === "Guinea Bissau" || filtered[i].location === "Cote d'Ivoire" && countries[j].properties.name === "Ivory Coast" || filtered[i].location === "Czechia" && countries[j].properties.name === "Czech Republic" || filtered[i].location === "North Macedonia" && countries[j].properties.name === "Macedonia")) {              
+
+              var colorScale = d3.interpolateYlOrRd(1-(1/filtered[i].new_cases_smoothed_per_million*50))
+              //for each country in the geojson file, check if it is in the csv file then colour it accordingly
+
+              g.selectAll('path') 
+              // country by country update
+                .data(countries[j] ? [countries[j]] : [], d => d.properties.name) 
+                .enter()
+                .append('path')
+                .attr('d', path)
+                .style('stroke', 'black')
+                .attr('fill', colorScale)
+                .style("background", "pink")
+                .call(zoom)
+                .on('mouseover', function (d) {
+                  d3.select(this).transition()
+                  .duration('40')
+                  .attr('opacity', '.75')
+
+                })
+                .on('mouseout', function (d) {
+                  d3.select(this).transition()
+                  .duration('40')
+                  .attr('opacity', '1')
+
+                }); 
+            }
+            else {
+              // console.log('no match')
+            }
+          }
+        }
+    });
+  });
+});
+console.log('d3.version:', d3.version);
+//displays d3 version
+</script>
+
+</html>
