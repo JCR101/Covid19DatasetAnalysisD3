@@ -28,22 +28,22 @@
             <p> Adjust slider to select the number of days since 2020-01-03 up to the last recorded day of 2023-03-15.
             </p>
         </div>
-        <svg id="svg" width="1000" height="600"></svg>
+        <div class="loader"></div>
+        <svg id="svg" width="800" height="400" ></svg>
         <div id="dataviz_basicZoom"></div>
         <div id="slider"></div>
         <div>
             <p>Here displays a choropleth of new cases smoothed per million over time, the darker the red, the higher
                 number of new cases.</p>
-
         </div>
         <div>
-            <svg id="scatter_plot" width="1000" height="1000"></svg>></svg>
+            <svg id="scatter_plot" width="800" height="600"></svg>></svg>
         </div>
         <div>
             <p>Here displays a scatter plot showing gdp per capita (x axis) vs total cases per million (y axis).</p>
         </div>
         <div>
-            <svg id="scatter_plot2" width="1000" height="1000"></svg>></svg>
+            <svg id="scatter_plot2" width="800" height="600"></svg>></svg>
         </div>
         <div>
             <p>Here displays a scatter plot showing total vaccinations per hundred (x axis) vs total cases per million
@@ -51,7 +51,7 @@
         </div>
         <select id="DropdownButton"></select>
         <div>
-            <svg id="line_graph" width="1000" height="1000"></svg>></svg>
+            <svg id="line_graph" width="800" height="600"></svg>></svg>
         </div>
         <div>
             <p>Here displays a line graph showing total cases per million over time for any country selected in the top
@@ -69,8 +69,8 @@
 
     //defining the margins
     const margin = { top: 10, right: 30, bottom: 30, left: 60 },
-        width2 = 1000 - margin.left - margin.right,
-        height2 = 1000 - margin.top - margin.bottom;
+        width2 = 800 - margin.left - margin.right,
+        height2 = 600 - margin.top - margin.bottom;
 
     //scatter plot showing gdp_per_capita vs total_cases
     var svg1 = d3.select('#scatter_plot')
@@ -117,53 +117,28 @@
         }
         let dateKeys = Array.from(dates.keys());
         //collected a list of all dates in the csv file
-        console.log(dateKeys.length);
+        // console.log(dateKeys.length);
 
 
 
-        //SCATTER PLOT data
+        //FIRST SCATTER PLOT
 
-        // Adding X axis
-        const scatterX1 = d3.scaleLinear()
-            .domain([0, 400])
-            .range([0, width2]);
-        svg3.append("g")
-            .attr("transform", `translate(0, ${height2})`)
-            .call(d3.axisBottom(scatterX1));
-
-        // Adding Y axis
-        const scatterY1 = d3.scaleLinear()
-            .domain([0, 1000000])
-            .range([height2, 0]);
-        svg3.append("g")
-            .call(d3.axisLeft(scatterY1));
-
-        console.log(typeof (dates.get(dateKeys[1167])));
-        // Adding dots
-        svg3.append('g')
-            .selectAll("dot")
-            .data(dates.get(dateKeys[1167]))
-            .join("circle")
-            .attr("cx", function (d) { console.log(d.total_vaccinations_per_hundred); return scatterX1(d.total_vaccinations_per_hundred); })
-            .attr("cy", function (d) { return scatterY1(d.total_cases_per_million); })
-            .attr("r", 3)
-            .style("fill", "blue")
-
+        // Adding X axis showing gdp per capita
         const scatterX = d3.scaleLinear()
             .domain([0, 100000])
             .range([0, width2]);
         svg1.append("g")
             .attr("transform", `translate(0, ${height2})`)
             .call(d3.axisBottom(scatterX));
-
-        // Adding Y axis
+ 
+        // Adding Y axis showing total cases per million
         const scatterY = d3.scaleLinear()
             .domain([0, 1000000])
             .range([height2, 0]);
         svg1.append("g")
             .call(d3.axisLeft(scatterY));
 
-        console.log(typeof (dates.get(dateKeys[1167])));
+        // console.log(typeof (dates.get(dateKeys[1167])));
         // Adding dots
         svg1.append('g')
             .selectAll("dot")
@@ -173,6 +148,35 @@
             .attr("cy", function (d) { return scatterY(d.total_cases_per_million); })
             .attr("r", 3)
             .style("fill", "red")
+
+
+        //SECOND SCATTER PLOT
+
+        // Adding X axis showing total vaccinations per hundred
+        const scatterX1 = d3.scaleLinear()
+            .domain([0, 350])
+            .range([0, width2]);
+        svg3.append("g")
+            .attr("transform", `translate(0, ${height2})`)
+            .call(d3.axisBottom(scatterX1));
+
+        // Adding Y axis showing total cases per million
+        const scatterY1 = d3.scaleLinear()
+            .domain([0, 1000000])
+            .range([height2, 0]);
+        svg3.append("g")
+            .call(d3.axisLeft(scatterY1));
+
+        // console.log(typeof (dates.get(dateKeys[1167])));
+        // Adding dots
+        svg3.append('g')
+            .selectAll("dot")
+            .data(dates.get(dateKeys[1167]))
+            .join("circle")
+            .attr("cx", function (d) { if (d.total_vaccinations_per_hundred>=0) {return scatterX1(d.total_vaccinations_per_hundred)} ; })
+            .attr("cy", function (d) { if (d.total_vaccinations_per_hundred>=0) {return scatterY1(d.total_cases_per_million)}; })
+            .attr("r", 3)
+            .style("fill", "blue")
 
         //LINE GRAPH data
 
@@ -187,10 +191,10 @@
             selectCountry.set(e.location, previousElement);
         }
 
-        console.log(selectCountry);
+        // console.log(selectCountry);
 
         selectCountryKeys = Array.from(selectCountry.keys());
-        console.log(selectCountryKeys);
+        // console.log(selectCountryKeys);
 
         var timeParser = d3.timeParse('%Y-%m-%d');
         // parse the date string into a date object
@@ -212,7 +216,7 @@
 
         var filteredCountry;
 
-        console.log(filteredCountry);
+        // console.log(filteredCountry);
 
         d3.select("#DropdownButton")
             .selectAll('myOptions')
@@ -241,14 +245,14 @@
         d3.select("#DropdownButton").on("change", function (event, d) {
 
             var selectedOption = d3.select(this).property("value");
-            console.log(selectedOption);
+            // console.log(selectedOption);
             filteredCountry = selectCountry.get(selectedOption);
             // runs the updater function with this selected option
             updater(filteredCountry);
         })
 
         filteredCountry = selectCountry.get("France");
-        console.log(filteredCountry);
+        // console.log(filteredCountry);
 
         // Drawing the line
         svg2.append("path")
@@ -262,7 +266,8 @@
                 .y(function (d) { return y2(d.total_cases_per_million) })
             )
 
-
+        //CHOROPLETH MAP
+        d3.select('.loader').style('display', 'block');
         // slider
         var slider = d3
             .sliderHorizontal()
@@ -281,20 +286,18 @@
             .attr('transform', 'translate(30,30)')
             .call(slider);
 
-
         slider.on('onchange', val => {
             // console.log(val);
             filtered = dates.get(dateKeys[val]);
             slider.filtered = filtered;
             // when the slider is changed, it will update the map
 
-
             const g = svg.append('g').style('justify-content', 'center');
             const handleZoom = (e) => g.attr('transform', e.transform);
             const zoom = d3.zoom().on('zoom', handleZoom);
             // zooming functionality
 
-            var projection = d3.geoMercator().scale(150).center([0, 20]).translate([width / 2, height / 2]);
+            var projection = d3.geoMercator().scale(100).center([-25, 40]).translate([width / 2, height / 2]);
             var path = d3.geoPath().projection(projection);
             // project the mercator with this filtered data onto the svg 
 
@@ -303,7 +306,7 @@
                 // console.log(countries);
 
                 // CHOROPLETH MAP data
-                d3.selectAll("path").remove();
+                d3.selectAll("path.country-path").remove();
                 for (var j = 0; j < countries.length; j++) {
                     // console.log(countries[j].properties.name); 
                     var land = countries[j].properties.name;
@@ -314,11 +317,13 @@
                             var colorScale = d3.interpolateYlOrRd(1 - (1 / filtered[i].new_cases_smoothed_per_million * 50))
                             //for each country in the geojson file, check if it is in the csv file then colour it accordingly
 
-                            g.selectAll('path')
+                            g.selectAll('path.country-path')
                                 // country by country update
+                                
                                 .data(countries[j] ? [countries[j]] : [], d => d.properties.name)
                                 .enter()
                                 .append('path')
+                                .attr('class', 'country-path')
                                 .attr('d', path)
                                 .style('stroke', 'black')
                                 .attr('fill', colorScale)
@@ -344,6 +349,7 @@
                 }
             });
         });
+        d3.select('.loader').style('display', 'none');
     });
     console.log('d3.version:', d3.version);
 //displays d3 version
