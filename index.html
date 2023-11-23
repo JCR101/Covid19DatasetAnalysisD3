@@ -286,7 +286,8 @@
             .attr('transform', 'translate(30,30)')
             .call(slider);
 
-        slider.on('onchange', val => {
+
+        function updateMAP(val) {
             // console.log(val);
             filtered = dates.get(dateKeys[val]);
             slider.filtered = filtered;
@@ -348,6 +349,10 @@
                     }
                 }
             });
+        }
+        updateMAP(1);
+        slider.on('onchange', val => {
+            updateMAP(val);
         });
         d3.select('.loader').style('display', 'none');
     });
