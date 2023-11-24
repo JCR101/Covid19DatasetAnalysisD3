@@ -72,7 +72,7 @@
         width2 = 800 - margin.left - margin.right,
         height2 = 600 - margin.top - margin.bottom;
 
-    //scatter plot showing gdp_per_capita vs total_cases
+    //scatter plot showing gdp_per_capita vs total cases per million
     var svg1 = d3.select('#scatter_plot')
         .append("svg")
         .attr("width", width2 + margin.left + margin.right)
@@ -81,8 +81,7 @@
         .attr("transform", `translate(${margin.left}, ${margin.top})`)
         .style('justify-content', 'center');
 
-
-    //scatter plot showing total_vaccinations vs total_cases
+    //scatter plot showing total vaccinations per hundred vs total_cases per million
     var svg3 = d3.select('#scatter_plot2')
         .append("svg")
         .attr("width", width2 + margin.left + margin.right)
@@ -98,11 +97,9 @@
         .attr("height", height2 + margin.top + margin.bottom)
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`)
-    // .style('justify-content', 'center');
 
-
+    //COVID DATASET
     d3.csv("https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/owid-covid-data.csv").then((data) => {
-
         var filtered;
 
         var dates = new Map(); //instantiate dates hashmap 
@@ -115,11 +112,8 @@
             previousElement.push(e);
             dates.set(e.date, previousElement);
         }
+        //collecting a list of all dates in the csv file
         let dateKeys = Array.from(dates.keys());
-        //collected a list of all dates in the csv file
-        // console.log(dateKeys.length);
-
-
 
         //FIRST SCATTER PLOT
 
@@ -138,7 +132,6 @@
         svg1.append("g")
             .call(d3.axisLeft(scatterY));
 
-        // console.log(typeof (dates.get(dateKeys[1167])));
         // Adding dots
         svg1.append('g')
             .selectAll("dot")
@@ -167,7 +160,6 @@
         svg3.append("g")
             .call(d3.axisLeft(scatterY1));
 
-        // console.log(typeof (dates.get(dateKeys[1167])));
         // Adding dots
         svg3.append('g')
             .selectAll("dot")
@@ -178,7 +170,7 @@
             .attr("r", 3)
             .style("fill", "blue")
 
-        //LINE GRAPH data
+        //LINE GRAPH 
 
         var selectCountry = new Map();
         for (var i = 0; i < data.length; i++) { //iterate through the data
@@ -191,15 +183,11 @@
             selectCountry.set(e.location, previousElement);
         }
 
-        // console.log(selectCountry);
-
         selectCountryKeys = Array.from(selectCountry.keys());
-        // console.log(selectCountryKeys);
-
         var timeParser = d3.timeParse('%Y-%m-%d');
         // parse the date string into a date object
 
-        // Add X axis
+        // Add LINE GRAPH X axis
         var x2 = d3.scaleTime()
             .domain([timeParser(dateKeys[0]), timeParser(dateKeys[1167])])
             .range([0, width2]);
@@ -207,7 +195,7 @@
             .attr("transform", `translate(0, ${height2})`)
             .call(d3.axisBottom(x2));
 
-        // Add Y axis
+        // Add LINE GRAPH Y axis
         var y2 = d3.scaleLinear()
             .domain([0, +1000000])
             .range([height2, 0]);
@@ -216,8 +204,6 @@
 
         var filteredCountry;
 
-        // console.log(filteredCountry);
-
         d3.select("#DropdownButton")
             .selectAll('myOptions')
             .data(selectCountryKeys)
@@ -225,7 +211,6 @@
             .append('option')
             .text(function (d) { return d; }) // text shown in the dropdown
             .attr("value", function (d) { return filteredCountry = d; }) // value returned by the dropdown
-
 
         function updater(filteredCountry) {
             // updates the line graph
@@ -241,25 +226,17 @@
                 )
         }
 
-
         d3.select("#DropdownButton").on("change", function (event, d) {
-
             var selectedOption = d3.select(this).property("value");
-            // console.log(selectedOption);
             filteredCountry = selectCountry.get(selectedOption);
             // runs the updater function with this selected option
             updater(filteredCountry);
         })
-
-        filteredCountry = selectCountry.get("France");
-        // console.log(filteredCountry);
-
         // Drawing the line
         svg2.append("path")
             .datum(filteredCountry)
             .attr("fill", "none")
             .attr("stroke", "red")
-            // .attr("stroke", function(d){ return color })
             .attr("stroke-width", 1.5)
             .attr("d", d3.line()
                 .x(function (d) { return x2(timeParser(d.date)) })
@@ -267,8 +244,10 @@
             )
 
         //CHOROPLETH MAP
-        d3.select('.loader').style('display', 'block');
-        // slider
+
+        d3.select('.loader').style('display', 'block'); 
+        // show the loader spinner whilst the data is loading
+
         var slider = d3
             .sliderHorizontal()
             .min(0)
@@ -277,7 +256,6 @@
             .width(650)
             .displayValue(true)
             .default(1)
-
         d3.select('#slider')
             .append('svg')
             .attr('width', 700)
@@ -286,9 +264,7 @@
             .attr('transform', 'translate(30,30)')
             .call(slider);
 
-
         function updateMAP(val) {
-            // console.log(val);
             filtered = dates.get(dateKeys[val]);
             slider.filtered = filtered;
             // when the slider is changed, it will update the map
@@ -304,23 +280,20 @@
 
             d3.json('https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson').then((topology) => {
                 var countries = topology.features.filter((d) => d.properties.name);
-                // console.log(countries);
 
                 // CHOROPLETH MAP data
                 d3.selectAll("path.country-path").remove();
                 for (var j = 0; j < countries.length; j++) {
-                    // console.log(countries[j].properties.name); 
+                    // console.log(countries[j].properties.name) COULD BE USEFUL FOR DEBUGGING GB; 
                     var land = countries[j].properties.name;
                     for (var i = 0; i < filtered.length; i++) {
                         // console.log(filtered[i].location)
                         if (countries[j].properties.name === filtered[i].location || (filtered[i].location === "United States" && countries[j].properties.name === "USA" || filtered[i].location === "United Kingdom" && countries[j].properties.name === "England" || filtered[i].location === "Democratic Republic of Congo" && countries[j].properties.name === "Democratic Republic of the Congo" || filtered[i].location === "Tanzania" && countries[j].properties.name === "United Republic of Tanzania" || filtered[i].location === "Congo" && countries[j].properties.name === "Republic of the Congo" || filtered[i].location === "Serbia" && countries[j].properties.name === "Republic of Serbia" || filtered[i].location === "Guinea-Bissau" && countries[j].properties.name === "Guinea Bissau" || filtered[i].location === "Cote d'Ivoire" && countries[j].properties.name === "Ivory Coast" || filtered[i].location === "Czechia" && countries[j].properties.name === "Czech Republic" || filtered[i].location === "North Macedonia" && countries[j].properties.name === "Macedonia")) {
-
                             var colorScale = d3.interpolateYlOrRd(1 - (1 / filtered[i].new_cases_smoothed_per_million * 50))
                             //for each country in the geojson file, check if it is in the csv file then colour it accordingly
 
                             g.selectAll('path.country-path')
                                 // country by country update
-                                
                                 .data(countries[j] ? [countries[j]] : [], d => d.properties.name)
                                 .enter()
                                 .append('path')
@@ -334,13 +307,11 @@
                                     d3.select(this).transition()
                                         .duration('40')
                                         .attr('opacity', '.75')
-
                                 })
                                 .on('mouseout', function (d) {
                                     d3.select(this).transition()
                                         .duration('40')
                                         .attr('opacity', '1')
-
                                 });
                         }
                         else {
@@ -355,6 +326,7 @@
             updateMAP(val);
         });
         d3.select('.loader').style('display', 'none');
+        //hide the loader spinner once the data has loaded
     });
     console.log('d3.version:', d3.version);
 //displays d3 version
