@@ -1,4 +1,4 @@
-<!-- Code from d3-graph-gallery.com -->
+<!-- Some sections include code from d3-graph-gallery.com -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -12,11 +12,9 @@
     <script src="https://cdn.jsdelivr.net/npm/d3-fetch@3"></script>
     <!-- <script src="https://unpkg.com/topojson@3"></script> -->
     <script src="https://unpkg.com/topojson-client@3"></script>
-
     <!-- <script src="https://web.archive.org/web/20230311065005if_/https://unpkg.com/topojson-client@3.1.0/dist/topojson-client.min.js"></script>  -->
     <!-- switch topojson if failing -->
     <script src="https://unpkg.com/d3-simple-slider"></script>
-
 </head>
 
 <body>
@@ -60,7 +58,6 @@
     </div>
 </body>
 
-
 <script>
     // The choropleth map showing total cases over time
     var svg = d3.select('svg'),
@@ -101,7 +98,6 @@
     //COVID DATASET
     d3.csv("https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/owid-covid-data.csv").then((data) => {
         var filtered;
-
         var dates = new Map(); //instantiate dates hashmap 
         for (var i = 0; i < data.length; i++) { //iterate through the data
             const e = data[i];
@@ -114,6 +110,7 @@
         }
         //collecting a list of all dates in the csv file
         let dateKeys = Array.from(dates.keys());
+
 
         //FIRST SCATTER PLOT
 
@@ -169,6 +166,7 @@
             .attr("cy", function (d) { if (d.total_vaccinations_per_hundred>=0) {return scatterY1(d.total_cases_per_million)}; })
             .attr("r", 3)
             .style("fill", "blue")
+
 
         //LINE GRAPH 
 
@@ -243,6 +241,7 @@
                 .y(function (d) { return y2(d.total_cases_per_million) })
             )
 
+
         //CHOROPLETH MAP
 
         d3.select('.loader').style('display', 'block'); 
@@ -291,7 +290,6 @@
                         if (countries[j].properties.name === filtered[i].location || (filtered[i].location === "United States" && countries[j].properties.name === "USA" || filtered[i].location === "United Kingdom" && countries[j].properties.name === "England" || filtered[i].location === "Democratic Republic of Congo" && countries[j].properties.name === "Democratic Republic of the Congo" || filtered[i].location === "Tanzania" && countries[j].properties.name === "United Republic of Tanzania" || filtered[i].location === "Congo" && countries[j].properties.name === "Republic of the Congo" || filtered[i].location === "Serbia" && countries[j].properties.name === "Republic of Serbia" || filtered[i].location === "Guinea-Bissau" && countries[j].properties.name === "Guinea Bissau" || filtered[i].location === "Cote d'Ivoire" && countries[j].properties.name === "Ivory Coast" || filtered[i].location === "Czechia" && countries[j].properties.name === "Czech Republic" || filtered[i].location === "North Macedonia" && countries[j].properties.name === "Macedonia")) {
                             var colorScale = d3.interpolateYlOrRd(1 - (1 / filtered[i].new_cases_smoothed_per_million * 50))
                             //for each country in the geojson file, check if it is in the csv file then colour it accordingly
-
                             g.selectAll('path.country-path')
                                 // country by country update
                                 .data(countries[j] ? [countries[j]] : [], d => d.properties.name)
@@ -315,7 +313,6 @@
                                 });
                         }
                         else {
-                            // console.log('no match')
                         }
                     }
                 }
