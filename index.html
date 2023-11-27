@@ -132,7 +132,7 @@
         // Adding dots
         svg1.append('g')
             .selectAll("dot")
-            .data(dates.get(dateKeys[1167]))
+            .data(dates.get(dateKeys[1167])) //change this to the length of the dates array
             .join("circle")
             .attr("cx", function (d) { if (d.gdp_per_capita > 1) { return scatterX(d.gdp_per_capita) } else { return 10000000 }; })
             .attr("cy", function (d) { return scatterY(d.total_cases_per_million); })
@@ -160,7 +160,7 @@
         // Adding dots
         svg3.append('g')
             .selectAll("dot")
-            .data(dates.get(dateKeys[1167]))
+            .data(dates.get(dateKeys[1167])) //CHANGE THIS TO THE LENGTH OF THE DATES ARRAY
             .join("circle")
             .attr("cx", function (d) { if (d.total_vaccinations_per_hundred>=0) {return scatterX1(d.total_vaccinations_per_hundred)} ; })
             .attr("cy", function (d) { if (d.total_vaccinations_per_hundred>=0) {return scatterY1(d.total_cases_per_million)}; })
@@ -187,7 +187,7 @@
 
         // Add LINE GRAPH X axis
         var x2 = d3.scaleTime()
-            .domain([timeParser(dateKeys[0]), timeParser(dateKeys[1167])])
+            .domain([timeParser(dateKeys[0]), timeParser(dateKeys[1167])]) //CHANGE THIS TO THE LENGTH OF THE DATES ARRAY
             .range([0, width2]);
         svg2.append("g")
             .attr("transform", `translate(0, ${height2})`)
@@ -250,7 +250,7 @@
         var slider = d3
             .sliderHorizontal()
             .min(0)
-            .max(1167)
+            .max(1167) // change this so that it is the length of the dates array
             .step(1)
             .width(650)
             .displayValue(true)
