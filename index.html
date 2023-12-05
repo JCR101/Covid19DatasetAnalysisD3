@@ -269,8 +269,14 @@
             // when the slider is changed, it will update the map
 
             const g = svg.append('g').style('justify-content', 'center');
-            const handleZoom = (e) => g.attr('transform', e.transform);
-            const zoom = d3.zoom().on('zoom', handleZoom);
+            const zoom = d3.zoom()
+                .scaleExtent([1, 8])
+                .on('start', () => svg.selectAll('.country-path').style('pointer-events', 'none')) // Disable pointer events when zoom starts
+                .on('zoom', (event) => g.attr('transform', event.transform))
+                .on('end', () => svg.selectAll('.country-path').style('pointer-events', 'auto')); // Re-enable pointer events when zoom ends
+
+            // Apply the zoom behavior to the SVG element
+            // svg.call(zoom);
             // zooming functionality
 
             var projection = d3.geoMercator().scale(100).center([-25, 40]).translate([width / 2, height / 2]);
@@ -300,7 +306,7 @@
                                 .style('stroke', 'black')
                                 .attr('fill', colorScale)
                                 .style("background", "pink")
-                                .call(zoom)
+                                // .call(zoom)
                                 .on('mouseover', function (d) {
                                     d3.select(this).transition()
                                         .duration('40')
