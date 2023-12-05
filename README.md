@@ -1,7 +1,9 @@
 # Covid19DatasetAnalysisD3
 
-TODO
+Data analysis webpage using D3.js about COVID-19 spread over time
+
+TODOs
 
 fix GB data not showing on choropleth
-choropleth dragging and zoom functionality broken
-ability to clear comparisons with button on line chart
+fix choropleth dragging and zoom functionality
+add ability to clear comparisons with button on the line chart
